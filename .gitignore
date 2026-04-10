@@ -32,6 +32,8 @@ Main.run.xml
 
 # Ignore Kotlin plugin data
 .kotlin
+echo ".DS_Store" >> .gitignore
+echo "**/.DS_Store" >> .gitignore
 
 .run
 zs-java-assignments-rishabhdev.iml
