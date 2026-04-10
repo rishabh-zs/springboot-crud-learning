@@ -5,7 +5,7 @@ run-name: ${{ github.actor }} is deploying to AWS 🚀
 on:
   push:
     branches:
-      - assignment-11-springBootDemoApp
+      - main
 
 jobs:
   # JOB 1: Build the code and package the files
