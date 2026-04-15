@@ -53,7 +53,6 @@ public class UserService implements UserDetailsService {
     @CacheEvict(allEntries = true)
     @Observed(name = "user.service", contextualName = "Register User")
     public User registerUser(User user) {
-        log.info("Request received to save user with username: {}", user.getUsername());
 
         if (userJpaRepository.existsByUsername(user.getUsername())) {
             throw new IllegalArgumentException("Username already exists");
@@ -61,7 +60,6 @@ public class UserService implements UserDetailsService {
         try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userJpaRepository.save(user);
-            log.info("User saved successfully");
         } catch (DataIntegrityViolationException ex) {
             log.error("Data integrity violation while saving user: {}", ex.getMessage());
             throw new IllegalStateException("Unable to save user due to data integrity constraints", ex);
@@ -112,11 +110,9 @@ public class UserService implements UserDetailsService {
     @Cacheable(key = "'all'", unless = "#result == null")
     @Observed(name = "user.service", contextualName = "Fetch All Users")
     public List<User> getAllUsers() {
-        log.info("Request received to get all users");
         List<User> users;
         try {
             users = userJpaRepository.findAll();
-            log.info("All users retrieved successfully");
         } catch (Exception ex) {
             log.error("Error retrieving all users: {}", ex.getMessage());
             throw new RuntimeException("Failed to fetch all users.", ex);
@@ -135,8 +131,6 @@ public class UserService implements UserDetailsService {
     @Cacheable(key = "#username", unless = "#result == null")
     @Observed(name = "user.service", contextualName = "Fetch User By Username")
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("Request received to fetch user with username: {}", username);
-
         User user = userJpaRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 

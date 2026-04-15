@@ -45,12 +45,10 @@ public class ProductService {
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     @Cacheable(key = "'all'", unless = "#result == null")
     public List<Product> getAllProducts() {
-        log.info("Request received to fetch all products");
         List<Product> products;
 
         try {
             products = productJpaRepository.findAllByOrderById();
-            log.info("All products fetched successfully");
         } catch (DataAccessException ex) {
             throw new IllegalArgumentException("Failed to fetch all products", ex);
         }
@@ -67,18 +65,14 @@ public class ProductService {
     @CacheEvict(allEntries = true, condition = "#result != null")
     @Observed(name = "product.service", contextualName = "Add Product")
     public Product addProduct(Product product) {
-        log.info("Request received to add product");
         Product addedProduct;
 
         try {
             product.setId(null);
             addedProduct = productJpaRepository.save(product);
-            log.info("Product added successfully: {}", product.getName());
         } catch (DataIntegrityViolationException ex) {
-            log.warn("Duplicate product name: {}", product.getName());
             throw new ProductAlreadyExistsException(product.getName());
         } catch (DataAccessException ex) {
-            log.error("Database error while adding product: {}", product.getName(), ex);
             throw new RuntimeException("Failed to add product to database.", ex);
         }
         return addedProduct;
@@ -94,16 +88,13 @@ public class ProductService {
     @CacheEvict(allEntries = true, condition = "#result != null")
     @Observed(name = "product.service", contextualName = "Delete Product")
     public Product deleteProduct(Integer productId) {
-        log.info("Request received to delete product by id: {}", productId);
         Integer id = Math.toIntExact(productId);
         Product existingProduct = productJpaRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
 
         try {
             productJpaRepository.delete(existingProduct);
-            log.info("Deleted product by id: {}", productId);
         } catch (DataAccessException ex) {
-            log.error("Error while deleting product id: {}", productId, ex);
             throw new RuntimeException("Failed to delete Product from database.", ex);
         }
         return existingProduct;
@@ -124,7 +115,6 @@ public class ProductService {
             throw new IllegalArgumentException("Product id must be a positive number.");
         }
 
-        log.info("Request received to update product id: {}", product.getId());
         Product existingProduct = productJpaRepository.findById(product.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found for id: " + product.getId()));
 
@@ -133,9 +123,7 @@ public class ProductService {
             existingProduct.setName(product.getName());
             existingProduct.setPrice(product.getPrice());
             updatedProduct = productJpaRepository.save(existingProduct);
-            log.info("Product updated successfully, id: {}", product.getId());
         } catch (DataAccessException ex) {
-            log.error("Error while updating product id: {}", product.getId(), ex);
             throw new RuntimeException("Failed to update product in database.", ex);
         }
         return updatedProduct;

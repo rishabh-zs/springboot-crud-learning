@@ -47,14 +47,13 @@ public class UserController {
      * @return the response entity
      */
     @PutMapping("/register")
-    public ResponseEntity<Map<String, String>> handleRegister(@RequestBody User user) {
-        log.debug("/auth/user/register endpoint was called with user: {}", user.getUsername());
+    public ResponseEntity<Map<String, Object>> handleRegister(@RequestBody User user) {
         User newUser = userService.registerUser(user);
 
-        Map<String, String> response = new LinkedHashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
         response.put("message", "User added successfully with username: " + user.getUsername());
-        response.put("User", newUser.toString());
+        response.put("User", newUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -66,7 +65,6 @@ public class UserController {
      */
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> handleLogin(@Valid @RequestBody AuthRequest request) {
-        log.debug("/auth/user/login endpoint was called for username: {}", request.username());
         String jwtToken = userService.loginUser(request);
 
         Map<String, String> response = new LinkedHashMap<>();
@@ -83,15 +81,11 @@ public class UserController {
      */
     @GetMapping("/getUsers")
     public ResponseEntity<Map<String, Object>> handleGetUser() {
-        log.debug("/auth/user/getUsers endpoint was called");
-        long start = System.currentTimeMillis();
         List<User> allUsers = userService.getAllUsers();
-        long endTime = System.currentTimeMillis();
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
         response.put("message", "All user fetched successfully");
-        response.put("time", (endTime - start) + "ms");
         response.put("users:", allUsers);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

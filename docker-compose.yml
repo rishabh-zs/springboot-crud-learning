@@ -1,12 +1,13 @@
 services:
   db:
     image: postgres:latest
+    command: -p 5433
     environment:
-      POSTGRES_USER: user1
+      POSTGRES_USER: user2
       POSTGRES_PASSWORD: User#2026
-      POSTGRES_DB: assignment11
+      POSTGRES_DB: practice1
     ports:
-      - "5466:5432"
+      - "5467:5433"
     volumes:
       - postgres_data:/var/lib/postgresql
     restart: unless-stopped
@@ -16,21 +17,29 @@ services:
     depends_on:
       - db
       - zipkin
+      - redis
     environment:
       # Use the same db.* contract as local config; only host/port changes for Docker networking.
-      - DB_URL=jdbc:postgresql://db:5432/assignment11
-      - DB_USERNAME=user1
+      - DB_URL=jdbc:postgresql://db:5433/practice1
+      - DB_USERNAME=user2
       - DB_PASSWORD=User#2026
+      - SPRING_REDIS_HOST=redis
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - ZIPKIN_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - ZIPKIN_ENDPOINT=http://zipkin:9412/api/v2/spans
     ports:
-      - "8080:8080"
+      - "8081:8081"
     restart: unless-stopped
 
   zipkin: # 👈 NEW SERVICE
     image: openzipkin/zipkin
     ports:
-      - "9411:9411"
+      - "9412:9411"
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
     restart: unless-stopped
 
 volumes:

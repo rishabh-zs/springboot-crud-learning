@@ -19,6 +19,16 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.cache.CacheManager;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.security.jackson2.CoreJackson2Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import java.time.Duration;
 
 /**
  * The type Configure.
@@ -30,7 +40,36 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class Configure {
 
     /**
+     * Redis cache manager.
+     */
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.activateDefaultTyping(
+            BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build(),
+            ObjectMapper.DefaultTyping.NON_FINAL
+        );
+        objectMapper.registerModule(new CoreJackson2Module());
+
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+            .entryTtl(Duration.ofHours(1))
+            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializer));
+
+        return RedisCacheManager.builder(connectionFactory)
+            .cacheDefaults(config)
+            .build();
+    }
+
+    /**
      * Security filter chain for JWT authentication.
+     *
+     * @param http                      the http
+     * @param jwtAuthenticationFilter   the jwt authentication filter
+     * @param daoAuthenticationProvider the dao authentication provider
+     * @return the security filter chain
+     * @throws Exception the exception
      */
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -44,6 +83,7 @@ public class Configure {
             .authenticationProvider(daoAuthenticationProvider)
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/auth/user/register","/auth/user/login").permitAll()
+                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                     .requestMatchers("/categories/**", "/products/**", "/auth/user/getUsers").authenticated()
                     .anyRequest().permitAll()
             )
@@ -51,6 +91,13 @@ public class Configure {
         return http.build();
     }
 
+    /**
+     * Authentication manager.
+     *
+     * @param configuration the configuration
+     * @return the authentication manager
+     * @throws Exception the exception
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();

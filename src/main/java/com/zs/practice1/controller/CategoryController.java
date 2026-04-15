@@ -49,18 +49,13 @@ public class CategoryController {
      */
     @GetMapping("/GetallCategories")
     public ResponseEntity<Map<String, Object>> handleGetAllCategories() {
-        long startTime = System.currentTimeMillis();
-        log.debug("/GetallCategories endpoint was called");
         List<Category> categories = categoryService.getAllCategories();
-        long endTime = System.currentTimeMillis();
-        long responseTime = endTime - startTime;
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
         response.put("message", "all category fetched successfully");
         response.put("categories", categories);
         response.put("totalCategoryCount", categories.size());
-        response.put("responseTime", responseTime + "ms");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -72,17 +67,12 @@ public class CategoryController {
      */
     @PostMapping("/aCategory")
     public ResponseEntity<Map<String, Object>> handleAddCategory(@Valid @RequestBody Category category) {
-        long startTime = System.currentTimeMillis();
-        log.debug("/addCategory endpoint was called");
         Category addedCategory = categoryService.addCategory(category);
-        long endTime = System.currentTimeMillis();
-        long responseTime = endTime - startTime;
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
         response.put("message", "category added successfully with id: " + addedCategory.getId());
         response.put("addedCategory", addedCategory);
-        response.put("responseTime", responseTime + "ms");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -94,18 +84,13 @@ public class CategoryController {
      */
     @GetMapping("/{categoryId}/products")
     public ResponseEntity<Map<String, Object>> handleGetAllProductByCategoryId(@PathVariable @Positive Integer categoryId) {
-        long startTime = System.currentTimeMillis();
-        log.debug("/{categoryId}/products endpoint was called");
         List<Product> products = categoryService.getProductsByCategoryId(categoryId);
-        long endTime = System.currentTimeMillis();
-        long responseTime = endTime - startTime;
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
         response.put("message", "products fetched successfully for category id: " + categoryId);
         response.put("products", products);
         response.put("totalProductCountInCategory", products.size());
-        response.put("responseTime", responseTime + "ms");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -117,18 +102,12 @@ public class CategoryController {
      */
     @DeleteMapping("/dCategory/{categoryId}")
     public ResponseEntity<Map<String, Object>> handleDeleteCategory(@PathVariable @Positive Integer categoryId) {
-        long startTime = System.currentTimeMillis();
-        Integer catId = categoryId;
-        log.debug("/deleteCategory endpoint was called");
-        Category deletedCategory = categoryService.deleteCategory(catId);
-        long endTime = System.currentTimeMillis();
-        long responseTime = endTime - startTime;
+        Category deletedCategory = categoryService.deleteCategory(categoryId);
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
         response.put("message", "category deleted with id :" + categoryId);
         response.put("deletedCategory", deletedCategory);
-        response.put("responseTime", responseTime + "ms");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -140,16 +119,11 @@ public class CategoryController {
      */
     @PatchMapping("/uCategory")
     public ResponseEntity<Map<String, Object>> handleUpdateCategory(@Valid @RequestBody Category category) {
-        long startTime = System.currentTimeMillis();
-        log.debug("/updateCategory endpoint was called");
         Category updatedCategory = categoryService.updateCategory(category);
-        long endTime = System.currentTimeMillis();
-        long responseTime = endTime - startTime;
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
         response.put("message", "category updated with ID" + updatedCategory.getId());
-        response.put("responseTime", responseTime + "ms");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

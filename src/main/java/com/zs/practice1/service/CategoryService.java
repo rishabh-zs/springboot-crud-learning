@@ -50,11 +50,10 @@ public class CategoryService {
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     @Cacheable(key = "'all'", unless = "#result == null")
     public List<Category> getAllCategories() {
-        log.info("Request received to fetch all categories");
         List<Category> categories;
+
         try {
             categories = categoryJpaRepository.findAllByOrderById();
-            log.info("All categories retrieved successfully");
         } catch (DataRetrievalFailureException ex) {
             throw new CannotGetAllCategoryException("Failed to fetch all categories.", ex);
         }
@@ -71,14 +70,12 @@ public class CategoryService {
     @CacheEvict(allEntries = true, condition = "#result != null")
     @Observed(name = "category.service", contextualName = "Add Category")
     public Category addCategory(Category category) {
-        log.info("Request received to add category: {}", category.getName());
         Category newCat;
+
         try {
             category.setId(null);
             newCat = categoryJpaRepository.save(category);
-            log.info("Category added successfully with id: {}", newCat.getId());
         } catch (DataIntegrityViolationException ex) {
-            log.error("Duplicate category name: {}", category.getName());
             throw new CategoryAlreadyExistsException("Category already exists", ex);
         }
         return newCat;
@@ -94,7 +91,6 @@ public class CategoryService {
     @Cacheable(key = "'products:' + #categoryId", unless = "#result == null")
     @Observed(name = "category.service", contextualName = "Get Products By Category")
     public List<Product> getProductsByCategoryId(Integer categoryId) {
-        log.info("Request received to fetch products for category id: {}", categoryId);
         Integer id = Math.toIntExact(categoryId);
 
         if (!categoryJpaRepository.existsById(id)) {
@@ -103,9 +99,7 @@ public class CategoryService {
         List<Product> products;
         try {
             products = categoryJpaRepository.findAllProductsByCategoryIdOrderById(categoryId);
-            log.info("Products retrieved successfully with Category id: {}", categoryId);
         } catch (DataAccessException ex) {
-            log.error("error while fetching products for category id: {}", categoryId, ex);
             throw new CannotGetAllProductByCategoryIdException("Failed to fetch all products for category id.", ex);
         }
         return products;
@@ -122,16 +116,13 @@ public class CategoryService {
     @CacheEvict(allEntries = true, condition = "#result != null")
     @Observed(name = "category.service", contextualName = "Delete Category")
     public Category deleteCategory(Integer categoryId) {
-        log.info("Request received to delete category id: {}", categoryId);
         Integer id = Math.toIntExact(categoryId);
 
         Category existingCategory = categoryJpaRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found for id: " + categoryId));
         try {
             categoryJpaRepository.delete(existingCategory);
-            log.info("Category deleted successfully with id: {}", categoryId);
         } catch (DataAccessException ex) {
-            log.error("Error while deleting category id: {}", categoryId, ex);
             throw new RuntimeException("Failed to delete category from database.", ex);
         }
         return existingCategory;
@@ -151,18 +142,14 @@ public class CategoryService {
         if (category.getId() == null || category.getId() <= 0) {
             throw new IllegalArgumentException("Category id must be a positive number.");
         }
-        log.info("Request received to update category id: {}", category.getId());
 
         Category existingCategory = categoryJpaRepository.findById(category.getId())
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found for id: " + category.getId()));
-
         Category updatedCategory;
         try {
             existingCategory.setName(category.getName());
             updatedCategory = categoryJpaRepository.save(existingCategory);
-            log.info("Category updated successfully with id: {}", category.getId());
         } catch (DataAccessException ex) {
-            log.error("Error while updating category id: {}", category.getId(), ex);
             throw new RuntimeException("Failed to update category in database.", ex);
         }
         return updatedCategory;

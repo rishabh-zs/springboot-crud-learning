@@ -48,18 +48,15 @@ public class ProductController {
      */
     @GetMapping("/GetallProducts")
     public ResponseEntity<Map<String, Object>> handleGetAllProducts() {
-        long startTime = System.currentTimeMillis();
-        log.debug("/allProducts endpoint was called");
+
         List<Product> products = productService.getAllProducts();
-        long endTime = System.currentTimeMillis();
-        long responseTime = endTime - startTime;
+
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
         response.put("message", "all product fetched successfully");
         response.put("products", products);
         response.put("totalProductCount", products.size());
-        response.put("responseTime", responseTime + "ms");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -71,18 +68,15 @@ public class ProductController {
      */
     @PostMapping("/aProduct")
     public ResponseEntity<Map<String, Object>> handleAddProduct(@Valid @RequestBody Product product) {
-        long startTime = System.currentTimeMillis();
-        log.debug("/addProduct endpoint was called");
+
         Product addedProduct = productService.addProduct(product);
-        long endTime = System.currentTimeMillis();
-        long responseTime = endTime - startTime;
+
 
         Map<String, Object> response = new LinkedHashMap<>();
         Integer id = addedProduct.getId();
         response.put("status", "success");
         response.put("message", "Product with ID :" + id + " added successfully");
         response.put("addedProduct", addedProduct);
-        response.put("responseTime", responseTime + "ms");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -94,18 +88,13 @@ public class ProductController {
      */
     @DeleteMapping("/dProduct/{productId}")
     public ResponseEntity<Map<String, Object>> handleDeleteProduct(@PathVariable @Positive Integer productId) {
-        long startTime = System.currentTimeMillis();
-        log.debug("/deleteProduct endpoint was called");
         Product deletedProduct = productService.deleteProduct(productId);
-        long endTime = System.currentTimeMillis();
-        long responseTime = endTime - startTime;
 
         Map<String, Object> response = new LinkedHashMap<>();
         Integer id = deletedProduct.getId();
         response.put("status", "success");
         response.put("message", "product with ID :" + id + " deleted successfully");
         response.put("deletedProduct", deletedProduct);
-        response.put("responseTime", responseTime + "ms");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -117,16 +106,11 @@ public class ProductController {
      */
     @PatchMapping("/uProduct")
     public ResponseEntity<Map<String, Object>> handleUpdateProduct(@Valid @RequestBody Product product) {
-        long startTime = System.currentTimeMillis();
-        log.debug("/updateProduct endpoint was called");
         Product updatedProduct = productService.updateProduct(product);
-        long endTime = System.currentTimeMillis();
-        long responseTime = endTime - startTime;
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
         response.put("message", "product with " + updatedProduct.getId() + " updated successfully");
-        response.put("responseTime", responseTime + "ms");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
